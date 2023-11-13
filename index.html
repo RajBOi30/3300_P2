@@ -7,8 +7,6 @@
 <body>
   <svg id="map" height="500" width="500" style="background:yellow"></svg>
   <script>
-
-    //We created an object that will hold the relevant information for each item. 
     function MenuItem(name, calories, ingredients, category) {
       this.name = name;
       this.calories = calories;
@@ -18,24 +16,22 @@
 
     let menu = [];
 
-    d3.csv("ingredients.csv").then(data => {
-      data.forEach(d => {
-        menu.push(new MenuItem(d.Item, 0, d.Ingredients));
+    d3.csv("ingredients.csv").then(ingredientsData => {
+      d3.csv("nutrition.csv").then(nutritionData => {
+        ingredientsData.forEach(ingredient => {
+          let item = new MenuItem(ingredient.Item, 0, ingredient.Ingredients);
+          let nutritionInfo = nutritionData.find(nutrition => nutrition.Item === ingredient.Item);
+          if (nutritionInfo) {
+            item.calories = nutritionInfo.Calories;
+            item.category = nutritionInfo.Category;
+          }
+          menu.push(item);
+        });
+
+        let selected = menu.find(item => item.name === "Sprite (Small)");
+        console.log(selected);
       });
     });
-    d3.csv("nutrition.csv").then(data => {
-      data.forEach(d => {
-        if (menu.find(i => i.name === d.Item)) {
-          menu.find(i => i.name === d.Item).calories = d.Calories;
-          menu.find(i => i.name === d.Item).category = d.Category;
-        }
-      });
-    });
-
-    // Strawberry Banana Smoothie (Medium)
-    // menu.find(i => i.name === d.Item).category = d.Category;
-
-
   </script>
 </body>
 
