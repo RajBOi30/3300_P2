@@ -7,30 +7,35 @@
 <body>
   <svg id="map" height="500" width="500" style="background:yellow"></svg>
   <script>
-    let items = [];
-    let calories = [];
+
+    //We created an object that will hold the relevant information for each item. 
+    function MenuItem(name, calories, ingredients, category) {
+      this.name = name;
+      this.calories = calories;
+      this.ingredients = ingredients;
+      this.category = category;
+    }
+
+    let menu = [];
+
     d3.csv("ingredients.csv").then(data => {
-      //const extent = d3.extent(data, d => d.log_attempt);
-
-      //const scale = d3.scaleSequential(d3.interpolateViridis).domain(extent);
-
       data.forEach(d => {
-        items.push(d.Item);
+        menu.push(new MenuItem(d.Item, 0, d.Ingredients));
       });
     });
     d3.csv("nutrition.csv").then(data => {
-      //const extent = d3.extent(data, d => d.log_attempt);
-
-      //const scale = d3.scaleSequential(d3.interpolateViridis).domain(extent);
-
       data.forEach(d => {
-        if (items.includes(d.Item)) {
-          console.log("yes");
+        if (menu.find(i => i.name === d.Item)) {
+          menu.find(i => i.name === d.Item).calories = d.Calories;
+          menu.find(i => i.name === d.Item).category = d.Category;
         }
       });
     });
-    console.log(items);
-    console.log(calories.length); 
+
+    // Strawberry Banana Smoothie (Medium)
+    // menu.find(i => i.name === d.Item).category = d.Category;
+
+
   </script>
 </body>
 
