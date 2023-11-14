@@ -16,15 +16,18 @@
 </head>
 
 <body>
+  <svg id="ingredients" height="700" width="400" style="background:beige"></svg>
   <svg id="categories" height="170" width="1350" style="background: #27251F"></svg>
   <script>
     const svg = d3.select("#categories");
-
-    function MenuItem(name, calories, ingredients, category) {
       this.name = name;
       this.calories = calories;
       this.ingredients = ingredients;
       this.category = category;
+      this.fat = fat;
+      this.carbs = carbs;
+      this.sugar = sugar;
+      this.protein = protein;
     }
 
     const categories = [
@@ -65,10 +68,170 @@
           if (nutritionInfo) {
             item.calories = nutritionInfo.Calories;
             item.category = nutritionInfo.Category;
+            item.fat = nutritionInfo.Total_Fat;
+            item.carbs = nutritionInfo.Carbohydrates;
+            item.sugar = nutritionInfo.Sugars;
+            item.protein = nutritionInfo.Protein;
+
           }
           menu.push(item);
         });
+        
+        const ingredients = d3.select('svg#ingredients');
+        const margins = { top: 40, right: 40, bottom: 40, left: 40};
+        const titleWidth = ingredients.attr("width") - margins.right - margins.left;
+        const titleHeight = ingredients.attr("height") - margins.top - margins.bottom;
+        const chartWidth = ingredients.attr("width") - margins.right - margins.left;
+        const chartHeight = ingredients.attr("height") - margins.top - margins.bottom;
+        let selectedItem = menu.find(i => i.name === "Bacon, Egg & Cheese Biscuit (Regular Biscuit)");
+        const ingredientsList = selectedItem.ingredients.split(",");
 
+        // wrap text function
+        function wrapText(text, width) {
+            text.each(function() {
+                let text = d3.select(this);
+                let words = text.text().split(/\s+/).reverse();
+                let line = [];
+                let lineNumber = 0;
+                let lineHeight = 1.1; // You might need to adjust this value based on font size
+                let y = text.attr("y");
+                let x = text.attr("x");
+                let dy = parseFloat(text.attr("dy") || 0);
+
+                let tspan = text.text(null).append("tspan").attr("x", x).attr("y", y).attr("dy", dy + "em");
+
+                let word = words.pop();
+                while (word) {
+                    line.push(word);
+                    tspan.text(line.join(" "));
+                    if (tspan.node().getComputedTextLength() > width && line.length > 1) {
+                        line.pop();
+                        tspan.text(line.join(" "));
+                        line = [word];
+                        tspan = text.append("tspan").attr("x", x).attr("y", y).attr("dy", ++lineNumber * lineHeight + dy + "em").text(word);
+                    }
+                    word = words.pop();
+                }
+            });
+        }
+
+        // add menu item name
+        const maxTextWidth = titleWidth - (margins.left + margins.right); // Calculate the available width
+        const textElement = ingredients.append('text')
+            .text(selectedItem.name.toUpperCase())
+            .attr('x', margins.left)
+            .attr('y', margins.top + 20)
+            .style('font-family', 'Arial')
+            .style('font-weight', 'bold')
+            .style('font-size', '20')
+            .style("text-anchor", "start")
+            .style('fill', 'black');
+
+        // wrap the title
+        wrapText(textElement, maxTextWidth);
+
+      
+        ingredients.append('text')
+          .text("Ingredients")
+          .attr('x', margins.left)
+          .attr('y', margins.top + 100)
+          .style('font-family', 'Arial')
+          .style('font-weight', 'bold')
+          .style('font-size', '16')
+          .style("text-anchor", "start")
+          .style('fill', 'black');
+
+
+        ingredientsList.forEach((ingredient, index) => {
+          ingredients.append('text')
+            .text(ingredient.trim()) // Trim any extra whitespace
+            .attr('x', margins.left)
+            .attr('y', margins.top + 120 + index * 20) // Adjust vertical positioning
+            .style('font-family', 'Arial')
+            .style('font-size', '16px') // Added 'px' for font size
+            .style("text-anchor", "start")
+            .style('fill', 'black');
+
+        });
+
+
+      // Create Pie Chart Function
+        function createPieChart(data) {
+            const pieData = [
+                { label: 'Fat', value: data.fat },
+                
+                // { label: 'Cholesterol', value: data.cholesterol/1000 },
+                // { label: 'Sodium', value: data.sodium/1000 },
+                { label: 'Carbs', value: data.carbs },
+                { label: 'Sugar', value: data.sugar },
+                { label: 'Protein', value: data.protein }
+            ];
+
+            const width = 400; // Adjust the width of the SVG for the pie chart
+            const height = 700; // Adjust the height of the SVG for the pie chart
+            const radius = 100;
+
+            const color = d3.scaleOrdinal(d3.schemeCategory10);
+
+            const svg = d3.select('#ingredients') // Select ingredients SVG
+                .attr('width', width)
+                .attr('height', height);
+
+            const pie = d3.pie().value(d => d.value);
+
+            const path = d3.arc()
+                .outerRadius(radius - 10)
+                .innerRadius(radius-40);
+
+            const arc = svg.append('g')
+                .attr('transform', `translate(${radius+30},${radius+250})`) // Adjust the translation to offset the pie chart
+
+                .selectAll('arc')
+                .data(pie(pieData))
+                .enter()
+                .append('g');
+
+            arc.append('path')
+                .attr('d', path)
+                .attr('fill', (d, i) => color(i));
+
+            // arc.append('text')
+            //     .attr('transform', d => `translate(${path.centroid(d)})`)
+            //     .attr('text-anchor', 'middle')
+            //     .text(d => `${d.data.label}: ${d.data.value}`); // Display label and value
+
+            // Create the legend
+            const legend = svg.append('g')
+                .attr('transform', `translate(${width - 160}, 300)`); // Adjust the position of the legend
+
+            const legendItems = legend.selectAll('.legend')
+                .data(pieData)
+                .enter()
+                .append('g')
+                .attr('class', 'legend')
+                .attr('transform', (d, i) => `translate(0,${i * 20})`); // Adjust spacing between legend items
+
+            legendItems.append('rect')
+                .attr('x', 0)
+                .attr('y', -7)
+                .attr('width', 10)
+                .attr('height', 10)
+                .attr('fill', (d, i) => color(i));
+
+            legendItems.append('text')
+                .attr('x', 15)
+                .text(d => `${d.label}: ${d.value}%`)
+                .style('font-family', 'Arial')
+                .style('font-size', '12px') // Added 'px' for font size
+                .style("text-anchor", "start")
+                .style('fill', 'black')
+                .attr('dy', '0.25em');
+        }
+
+        // Usage to create the pie chart for the selected item
+        createPieChart(selectedItem); // Create the pie chart for the selected item's nutritional values
+
+        //code for categories
         categories.forEach((category, index) => {
           const x = index * (buttonWidth + padding);
           const button = svg.append("rect")
@@ -118,6 +281,7 @@
       });
     });
   </script>
+
 </body>
 
 </html>
