@@ -158,14 +158,12 @@
 
         // Create Pie Chart Function
         function createPieChart(data) {
+          const totalNutrients = parseFloat(data.fat) + parseFloat(data.carbs) + parseFloat(data.sugar) + parseFloat(data.protein); // Calculate the total nutrients
           const pieData = [
-            { label: 'Fat', value: data.fat },
-
-            // { label: 'Cholesterol', value: data.cholesterol/1000 },
-            // { label: 'Sodium', value: data.sodium/1000 },
-            { label: 'Carbs', value: data.carbs },
-            { label: 'Sugar', value: data.sugar },
-            { label: 'Protein', value: data.protein }
+            { label: 'Fat', value: (parseFloat(data.fat) / totalNutrients) * 100 },
+            { label: 'Carbs', value: (parseFloat(data.carbs) / totalNutrients) * 100 },
+            { label: 'Sugar', value: (parseFloat(data.sugar) / totalNutrients) * 100 },
+            { label: 'Protein', value: (parseFloat(data.protein) / totalNutrients) * 100 }
           ];
 
           const width = 400; // Adjust the width of the SVG for the pie chart
@@ -221,7 +219,7 @@
 
           legendItems.append('text')
             .attr('x', 15)
-            .text(d => `${d.label}: ${d.value}%`)
+            .text(d => `${d.label}: ${d.value.toFixed(2)}%`)
             .style('font-family', 'Arial')
             .style('font-size', '12px') // Added 'px' for font size
             .style("text-anchor", "start")
