@@ -16,9 +16,9 @@
 </head>
 
 <body>
-  <svg id="categories" height="170" width="1350" style="background: #27251F"></svg>
-  <svg id="ingredients" height="700" width="400" style="background:beige"></svg>
-  <svg id="map" height="600" width="600" style="background:rgb(253, 253, 217)"></svg>
+  <svg id="categories" height="70" width="1170" style="background: #27251F"></svg>
+  <svg id="ingredients" height="500" width="400" style="background:#27251F"></svg>
+  <svg id="map" height="500" width="770" style="background:#27251F; position:absolute"></svg>
 
   <script>
     const svg = d3.select("#categories");
@@ -45,7 +45,7 @@
       "Smoothies & Shakes"
     ];
 
-    const buttonWidth = 140;
+    const buttonWidth = 120;
     const buttonHeight = 50;
     const padding = 10;
     let lastClicked = null;
@@ -166,7 +166,7 @@
           .style('font-weight', 'bold')
           .style('font-size', '20')
           .style("text-anchor", "start")
-          .style('fill', 'black');
+          .style('fill', 'white');
 
         // wrap the title
         wrapText(textElement, maxTextWidth);
@@ -180,7 +180,7 @@
           .style('font-weight', 'bold')
           .style('font-size', '16')
           .style("text-anchor", "start")
-          .style('fill', 'black');
+          .style('fill', 'white');
 
 
         ingredientsList.forEach((ingredient, index) => {
@@ -191,7 +191,7 @@
             .style('font-family', 'Arial')
             .style('font-size', '16px') // Added 'px' for font size
             .style("text-anchor", "start")
-            .style('fill', 'black');
+            .style('fill', 'white');
 
         });
 
@@ -213,9 +213,7 @@
 
           const color = d3.scaleOrdinal(d3.schemeCategory10);
 
-          const pieChart = d3.select('#ingredients') // Select ingredients SVG
-            .attr('width', width)
-            .attr('height', height);
+          const pieChart = d3.select('#ingredients');
 
           const pie = d3.pie().value(d => d.value);
 
@@ -225,7 +223,6 @@
 
           const arc = pieChart.append('g')
             .attr('transform', `translate(${radius + 30},${radius + 250})`) // Adjust the translation to offset the pie chart
-
             .selectAll('arc')
             .data(pie(pieData))
             .enter()
@@ -264,7 +261,7 @@
             .style('font-family', 'Arial')
             .style('font-size', '12px') // Added 'px' for font size
             .style("text-anchor", "start")
-            .style('fill', 'black')
+            .style('fill', 'white')
             .attr('dy', '0.25em');
         }
 
@@ -297,7 +294,7 @@
             .attr("fill", "#27251F")
             .attr("font-size", 14)
             .attr("class", "category-text")
-            .text(category)
+            .text(category !== "Smoothies & Shakes" ? category : "Smoothies")
             .attr("id", category.toLowerCase().replace(/\s/g, "_") + "text")
             .attr("text-anchor", "middle")
             .attr("dominant-baseline", "central")
