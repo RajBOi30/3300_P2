@@ -33,7 +33,7 @@
         const caloriesExtent = d3.extent(menu, d => d.calories);
         const sizeScale = d3.scaleLinear()
           .domain(caloriesExtent)
-          .range([10, 20]);
+          .range([5, 25]);
 
         // Set random initial positions for circles
         menu.forEach(d => {
