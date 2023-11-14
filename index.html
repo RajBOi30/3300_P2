@@ -2,11 +2,24 @@
 
 <head>
   <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    .category-button {
+      /* fill: #FFC72C; */
+    }
+
+    .category-text {
+      font-family: Helvetica Neue;
+      text-anchor: middle;
+      dominant-baseline: central;
+    }
+  </style>
 </head>
 
 <body>
-  <svg id="map" height="500" width="500" style="background:yellow"></svg>
+  <svg id="categories" height="170" width="1350" style="background: #27251F"></svg>
   <script>
+    const svg = d3.select("#categories");
+
     function MenuItem(name, calories, ingredients, category) {
       this.name = name;
       this.calories = calories;
@@ -14,11 +27,39 @@
       this.category = category;
     }
 
+    const categories = [
+      "Breakfast",
+      "Beef & Pork",
+      "Chicken & Fish",
+      "Salads",
+      "Snacks & Sides",
+      "Desserts",
+      "Beverages",
+      "Coffee & Tea",
+      "Smoothies & Shakes"
+    ];
+
+    const buttonWidth = 140;
+    const buttonHeight = 50;
+    const padding = 10;
+    let lastClicked = null;
+    let currentCategory = "Breakfast";
+
+    function styleButtons() {
+      svg.selectAll(".category-button").attr("fill", "#FFC72C");
+      svg.selectAll(".category-text").attr("fill", "#27251F");
+      if (lastClicked) {
+        d3.select(lastClicked).attr("fill", "#DA291C");
+        d3.select(lastClicked.nextElementSibling).attr("fill", "white");
+      }
+    }
+
     let menu = [];
 
     d3.csv("ingredients.csv").then(ingredientsData => {
       d3.csv("nutrition.csv").then(nutritionData => {
         ingredientsData.forEach(ingredient => {
+
           let item = new MenuItem(ingredient.Item, 0, ingredient.Ingredients);
           let nutritionInfo = nutritionData.find(nutrition => nutrition.Item === ingredient.Item);
           if (nutritionInfo) {
@@ -28,8 +69,52 @@
           menu.push(item);
         });
 
-        let selected = menu.find(item => item.name === "Sprite (Small)");
-        console.log(selected);
+        categories.forEach((category, index) => {
+          const x = index * (buttonWidth + padding);
+          const button = svg.append("rect")
+            .attr("x", x + 5)
+            .attr("y", 10)
+            .attr("width", buttonWidth)
+            .attr("height", buttonHeight)
+            .attr("rx", 20)
+            .attr("ry", 20)
+            .attr("id", category.toLowerCase().replace(/\s/g, "_"))
+            .attr("class", "category-button")
+            .on("click", function () {
+              filterCategory(category);
+              currentCategory = category;
+              lastClicked = this;
+              styleButtons();
+            });
+
+          svg.append("text")
+            .attr("x", x + (buttonWidth / 2) + 5)
+            .attr("y", 35)
+            .attr("fill", "#27251F")
+            .attr("font-size", 14)
+            .attr("class", "category-text")
+            .text(category)
+            .attr("id", category.toLowerCase().replace(/\s/g, "_") + "text")
+            .attr("text-anchor", "middle")
+            .attr("dominant-baseline", "central")
+            .on("click", function () {
+              button.dispatch("click");
+            });
+        });
+
+        styleButtons();
+
+        svg.selectAll(".category-button")
+          .attr("cursor", "pointer");
+
+        function filterCategory(category) {
+          let filteredItems = menu.filter(item => item.category === category);
+          if (filteredItems.length > 0) {
+            console.log(`Items in category '${category}':`, filteredItems);
+          } else {
+            console.log(`No items found in category '${category}'`);
+          }
+        }
       });
     });
   </script>
