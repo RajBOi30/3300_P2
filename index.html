@@ -16,8 +16,9 @@
 </head>
 
 <body>
-  <svg id="ingredients" height="700" width="400" style="background:beige"></svg>
   <svg id="categories" height="170" width="1350" style="background: #27251F"></svg>
+  <svg id="ingredients" height="700" width="400" style="background:beige"></svg>
+
   <script>
     const svg = d3.select("#categories");
     function MenuItem(name, calories, ingredients, category, fat, carbs, sugar, protein) {
@@ -69,7 +70,7 @@
           if (nutritionInfo) {
             item.calories = nutritionInfo.Calories;
             item.category = nutritionInfo.Category;
-            item.fat = nutritionInfo.Total_Fat;
+            item.fat = nutritionInfo["Total Fat"];
             item.carbs = nutritionInfo.Carbohydrates;
             item.sugar = nutritionInfo.Sugars;
             item.protein = nutritionInfo.Protein;
@@ -165,6 +166,7 @@
             { label: 'Sugar', value: (parseFloat(data.sugar) / totalNutrients) * 100 },
             { label: 'Protein', value: (parseFloat(data.protein) / totalNutrients) * 100 }
           ];
+          console.log(totalNutrients);
 
           const width = 400; // Adjust the width of the SVG for the pie chart
           const height = 700; // Adjust the height of the SVG for the pie chart
