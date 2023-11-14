@@ -82,30 +82,41 @@
           }
           menu.push(item);
         });
-        const caloriesExtent = d3.extent(menu, d => d.calories);
-        const sizeScale = d3.scaleLinear()
-          .domain(caloriesExtent)
-          .range([5, 25]);
+        function createCircleSVG() {
+          let subsetMenu = menu.filter(i => i.category === currentCategory);
+          const caloriesExtent = d3.extent(menu, d => d.calories);
+          const sizeScale = d3.scaleLinear()
+            .domain(caloriesExtent)
+            .range([5, 25]);
 
-        // Set random initial positions for circles
-        menu.forEach(d => {
-          d.x = Math.random() * widthCalories;
-          d.y = Math.random() * heightCalories;
-        });
+          // Set random initial positions for circles
 
-        let circles = map.selectAll("circle").data(menu)
-          .join("circle")
-          .attr("r", d => sizeScale(d.calories))
-          .attr("fill", "dodgerblue");
+          subsetMenu.forEach(d => {
+            d.x = Math.random() * widthCalories;
+            d.y = Math.random() * heightCalories;
+          });
 
-        let simulation = d3.forceSimulation(menu)
-          .force("charge", d3.forceManyBody().strength(5))
-          .force("collision", d3.forceCollide().radius(d => sizeScale(d.calories) + 2))
-          .on("tick", update);
+          let circles = map.selectAll("circle").data(subsetMenu)
+            .join("circle")
+            .attr("r", d => sizeScale(d.calories))
+            .attr("fill", "dodgerblue");
 
-        function update() {
-          circles.attr("cx", d => d.x)
-            .attr("cy", d => d.y);
+          circles.on('mouseover', (event) => {
+            circles.attr("fill", "orange");
+          });
+          circles.on('mouseout', () => {
+            circles.attr("fill", "dodgerblue");
+          });
+
+          let simulation = d3.forceSimulation(subsetMenu)
+            .force("charge", d3.forceManyBody().strength(15))
+            .force("collision", d3.forceCollide().radius(d => sizeScale(d.calories) + 2))
+            .on("tick", update);
+
+          function update() {
+            circles.attr("cx", d => d.x)
+              .attr("cy", d => d.y);
+          }
         }
 
         const ingredients = d3.select('svg#ingredients');
@@ -278,6 +289,7 @@
               currentCategory = category;
               lastClicked = this;
               styleButtons();
+              createCircleSVG();
             });
 
           svg.append("text")
