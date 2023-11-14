@@ -68,13 +68,12 @@
     d3.csv("ingredients.csv").then(ingredientsData => {
       d3.csv("nutrition.csv").then(nutritionData => {
         ingredientsData.forEach(ingredient => {
-
           let item = new MenuItem(ingredient.Item, 0, ingredient.Ingredients);
           let nutritionInfo = nutritionData.find(nutrition => nutrition.Item === ingredient.Item);
           if (nutritionInfo) {
             item.calories = nutritionInfo.Calories;
             item.category = nutritionInfo.Category;
-            item.fat = nutritionInfo["Total Fat"];
+            item.fat = nutritionInfo.Total_Fat;
             item.carbs = nutritionInfo.Carbohydrates;
             item.sugar = nutritionInfo.Sugars;
             item.protein = nutritionInfo.Protein;
