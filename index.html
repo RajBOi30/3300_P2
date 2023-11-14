@@ -5,7 +5,7 @@
 </head>
 
 <body>
-  <svg id="map" height="500" width="500" style="background:yellow"></svg>
+  <svg id="map" height="500" width="500" style="background:rgb(253, 253, 217)"></svg>
   <script>
     function MenuItem(name, calories, ingredients, category) {
       this.name = name;
@@ -15,6 +15,9 @@
     }
 
     let menu = [];
+    svg = d3.select("svg#map");
+    width = svg.attr("width");
+    height = svg.attr("height");
 
     d3.csv("ingredients.csv").then(ingredientsData => {
       d3.csv("nutrition.csv").then(nutritionData => {
@@ -27,11 +30,68 @@
           }
           menu.push(item);
         });
+        const caloriesExtent = d3.extent(menu, d => d.calories);
+        const sizeScale = d3.scaleLinear()
+          .domain(caloriesExtent)
+          .range([10, 20]);
 
-        let selected = menu.find(item => item.name === "Sprite (Small)");
-        console.log(selected);
+        console.log(menu);
+
+        function checkCollision(circles, newCircle) {
+          for (let i = 0; i < circles.length; i++) {
+            const existingCircle = circles[i];
+            const distance = Math.sqrt(
+              Math.pow(newCircle.cx - existingCircle.cx, 2) +
+              Math.pow(newCircle.cy - existingCircle.cy, 2)
+            );
+            if (distance < newCircle.r + existingCircle.r) {
+              return true;
+            }
+          }
+          return false;
+        }
+
+        var simulation = d3.forceSimulation(menu)
+          .force("x", d3.forceX().strength(0.1).x(d => Math.random() * 460 + 20))  // Random x positions
+          .force("y", d3.forceY().strength(0.1).y(d => Math.random() * 460 + 20))  // Random y positions
+          .force("collide", d3.forceCollide().radius(function (d) {
+            return sizeScale(parseFloat(d.Calories));
+          }));
+
+        let circles = svg.selectAll("circle").data(menu)
+          .join("circle")
+          .attr("r", d => sizeScale(d.calories))
+          .attr("cx", 100)
+          .attr("cy", 300)
+          .attr("fill", "dodgerblue");
+
+        simulation.on("tick", function () {
+          circles.attr("cx", function (d) { return d.x; })
+            .attr("cy", function (d) { return d.y; });
+        });
+
+        data.forEach(d => {
+          if (menu.find(i => i.name === d.Item)) {
+            menu.find(i => i.name === d.Item).calories = d.Calories;
+            menu.find(i => i.name === d.Item).category = d.Category;
+          }
+        });
       });
+
+      // var calories = d3.forceSimulation()
+      //   .nodes(menu)
+      //   .force("ypos", d3.forceY()
+      //     .strength(0.05)
+      //     .y(height / 2.0))
+      //   .force("xpos", d3.forceX()
+      //     .strength(0.05)
+      //     .x(d => ageScale(d.age)))
+      //   .force("collision", d3.forceCollide()
+      //     .radius(2.5)
+      //     .iterations(2))
+      //   .on("tick", updateAllPassengerPositions);
     });
+
   </script>
 </body>
 
