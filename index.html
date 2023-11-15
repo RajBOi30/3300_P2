@@ -24,7 +24,6 @@
     <svg id="ingredients" height="750" width="600" style="background:#27251F;"></svg>
   </div>
   <script>
-    
     const svg = d3.select("#categories");
     function MenuItem(name, calories, ingredients, category, fat, carbs, sugar, protein) {
       this.name = name;
@@ -62,7 +61,7 @@
       // Set the initial style for the "Breakfast" category button
       const breakfastButton = d3.select("#Breakfast");
       const breakfastButtonText = d3.select("#Breakfasttext");
-      
+
       if (currentCategory === "Breakfast") {
         breakfastButton.attr("fill", "#DA291C");
         breakfastButtonText.attr("fill", "white");
@@ -71,7 +70,7 @@
       if (lastClicked) {
         d3.select(lastClicked).attr("fill", "#DA291C");
         d3.select(lastClicked.nextElementSibling).attr("fill", "white");
-    }
+      }
     }
 
     let menu = [];
@@ -96,10 +95,8 @@
           menu.push(item);
         });
 
-
         // let selectedItem = menu.find(i => i.name === "Bacon, Egg & Cheese Biscuit (Regular Biscuit)");
         let selectedItem;
-        
         function createCircleSVG() {
           let subsetMenu = menu.filter(i => i.category === currentCategory);
           const caloriesExtent = d3.extent(menu, d => d.calories);
@@ -121,62 +118,38 @@
 
           circles.on('mouseover', function (event, d) {
             if (clickedCircleData !== d) {
-              d3.select(this).attr("fill", "#FFC72C"); 
-              const tooltip = d3.select("#tooltip");
-              tooltip.transition()
-                  .duration(200)
-                  .style("opacity", .9);
-
-              tooltip.html(`<strong>${d.name}</strong><br>Calories: ${d.calories}`)
-                  .style("left", (event.pageX) + "px")
-                  .style("top", (event.pageY - 28) + "px");
+              d3.select(this).attr("fill", "#FFC72C"); // Set the hover circle to orange unless it was clicked
             }
           });
 
           circles.on('mouseout', function (event, d) {
             if (clickedCircleData !== d) {
               d3.select(this).attr("fill", (clickedCircleData === d) ? "white" : "#DA291C");
-              d3.select("#tooltip").transition()
-                .duration(500)
-                .style("opacity", 0);
             }
           });
-
-          d3.select("body").append("div")
-            .attr("id", "tooltip")
-            .style("opacity", 0)
-            .style("position", "absolute")
-            .style("background-color", "white")
-            .style("border", "1px solid #ddd")
-            .style("border-radius", "5px")
-            .style("padding", "10px")
-            .style("pointer-events", "none")
-            .style("font-family", "Helvetica Neue")  
-            .style("text-anchor", "middle")  
-            .style("dominant-baseline", "central");  
 
           let clickedCircleData; // Store data of the clicked circle
 
           circles.on('click', function (event, d) {
-          // Handle click on individual circle (d represents the data of the clicked circle)
-          selectedItem = d;
-          createPieChart(selectedItem);
+            // Handle click on individual circle (d represents the data of the clicked circle)
+            selectedItem = d;
+            createPieChart(selectedItem);
 
-          // Reset the color of the previously clicked circle
-          if (clickedCircleData) {
-            map.selectAll("circle").filter(data => data === clickedCircleData)
-              .attr("fill", "#DA291C");
-          }
+            // Reset the color of the previously clicked circle
+            if (clickedCircleData) {
+              map.selectAll("circle").filter(data => data === clickedCircleData)
+                .attr("fill", "#DA291C");
+            }
 
-      // Set the color of the clicked circle to white
-      d3.select(this).attr("fill", "white");
+            // Set the color of the clicked circle to white
+            d3.select(this).attr("fill", "white");
 
-      // Update the clicked circle data
-      clickedCircleData = d;
-    });
+            // Update the clicked circle data
+            clickedCircleData = d;
+          });
 
-        let simulation = d3.forceSimulation(subsetMenu)
-            .force("charge", d3.forceManyBody().strength(15)  // Adjust the base strength (50) and factor as needed
+          let simulation = d3.forceSimulation(subsetMenu)
+            .force("charge", d3.forceManyBody().strength(15))
             .force("collision", d3.forceCollide().radius(d => sizeScale(d.calories) + 2))
             .on("tick", update);
 
@@ -243,9 +216,8 @@
 
           // wrap the title
           wrapText(textElement, maxTextWidth);
-          
-           // list ingredients
-        ingredients.append('text')
+          // list ingredients
+          ingredients.append('text')
             .text("Ingredients")
             .attr('x', margins.left)
             .attr('y', margins.top + 340)
@@ -255,44 +227,34 @@
             .style("text-anchor", "start")
             .style('fill', 'white');
 
-
           // let currentVerticalPosition = margins.top + 360;
           //const lineHeight = 1.2;
-        //   let currentVerticalPosition = margins.top + 360;
-        // const lineHeight = 1.5;
-
+          //   let currentVerticalPosition = margins.top + 360;
+          // const lineHeight = 1.5;
           ingredientsList.forEach((ingredient, index) => {
             console.log(ingredient);
             ingredients.append('text')
               .text(ingredient.trim()) // Trim any extra whitespace
               .attr('x', margins.left)
-
-              .attr('y',  margins.top + 360 + index * 20) // Adjust vertical positioning
-
+              .attr('y', margins.top + 360 + index * 20) // Adjust vertical positioning
               .style('font-family', 'Arial')
               .style('font-size', '16px') // Added 'px' for font size
               .style("text-anchor", "start")
               .style('fill', 'white');
-              //.call(wrapText, maxTextWidth);
-              // const textHeight = textElement.node().getBBox().height;
-              // currentVerticalPosition += textHeight * lineHeight + 20;;
+            //.call(wrapText, maxTextWidth);
+            // const textHeight = textElement.node().getBBox().height;
+            // currentVerticalPosition += textHeight * lineHeight + 20;;
           });
 
 
           // pie chart
           const totalNutrients = parseFloat(data.fat) + parseFloat(data.carbs) + parseFloat(data.sugar) + parseFloat(data.protein); // Calculate the total nutrients
-          let pieData;
-          if (totalNutrients === 0) {
-            pieData = [{ label: 'No nutritional data available', value: 100 }];          
-          } else {
-              // Calculate the percentage values for each nutrient
-              pieData = [
-                  { label: 'Fat', value: (parseFloat(data.fat) / totalNutrients) * 100 },
-                  { label: 'Carbs', value: (parseFloat(data.carbs) / totalNutrients) * 100 },
-                  { label: 'Sugar', value: (parseFloat(data.sugar) / totalNutrients) * 100 },
-                  { label: 'Protein', value: (parseFloat(data.protein) / totalNutrients) * 100 }
-              ];
-          }
+          const pieData = [
+            { label: 'Fat', value: (parseFloat(data.fat) / totalNutrients) * 100 },
+            { label: 'Carbs', value: (parseFloat(data.carbs) / totalNutrients) * 100 },
+            { label: 'Sugar', value: (parseFloat(data.sugar) / totalNutrients) * 100 },
+            { label: 'Protein', value: (parseFloat(data.protein) / totalNutrients) * 100 }
+          ];
 
           const radius = 100;
           const customColors = ["#FFC72C", "#DA291C", "#A36440", "#68C260"];
@@ -322,7 +284,6 @@
           const legend = pieChart.append('g')
             .attr('transform', `translate(${chartWidth - 160}, 200)`); // Adjust the position of the legend
 
-
           const legendItems = legend.selectAll('.legend')
             .data(pieData)
             .enter()
@@ -347,8 +308,8 @@
             .attr('dy', '0.25em');
         }
 
-
-        createPieChart(selectedItem); // Create the pie chart for the selected item's nutritional values
+        // create pie chart
+        // createPieChart(selectedItem); 
         //code for categories
         categories.forEach((category, index) => {
           const x = index * (buttonWidth + padding);
@@ -399,9 +360,9 @@
         }
         createCircleSVG();
       });
+
     });
   </script>
-
 </body>
 
 </html>
