@@ -118,15 +118,39 @@
 
           circles.on('mouseover', function (event, d) {
             if (clickedCircleData !== d) {
-              d3.select(this).attr("fill", "#FFC72C"); // Set the hover circle to orange unless it was clicked
+              d3.select(this).attr("fill", "#FFC72C"); 
+              const tooltip = d3.select("#tooltip");
+              tooltip.transition()
+                  .duration(200)
+                  .style("opacity", .9);
+
+              tooltip.html(`<strong>${d.name}</strong><br>Calories: ${d.calories}`)
+                  .style("left", (event.pageX) + "px")
+                  .style("top", (event.pageY - 28) + "px");
             }
           });
 
           circles.on('mouseout', function (event, d) {
             if (clickedCircleData !== d) {
               d3.select(this).attr("fill", (clickedCircleData === d) ? "white" : "#DA291C");
+              d3.select("#tooltip").transition()
+                .duration(500)
+                .style("opacity", 0);
             }
           });
+
+          d3.select("body").append("div")
+            .attr("id", "tooltip")
+            .style("opacity", 0)
+            .style("position", "absolute")
+            .style("background-color", "white")
+            .style("border", "1px solid #ddd")
+            .style("border-radius", "5px")
+            .style("padding", "10px")
+            .style("pointer-events", "none")
+            .style("font-family", "Helvetica Neue")  
+            .style("text-anchor", "middle")  
+            .style("dominant-baseline", "central");  
 
           let clickedCircleData; // Store data of the clicked circle
 
@@ -148,8 +172,8 @@
       clickedCircleData = d;
     });
 
-          let simulation = d3.forceSimulation(subsetMenu)
-            .force("charge", d3.forceManyBody().strength(15))
+        let simulation = d3.forceSimulation(subsetMenu)
+            .force("charge", d3.forceManyBody().strength(15)  // Adjust the base strength (50) and factor as needed
             .force("collision", d3.forceCollide().radius(d => sizeScale(d.calories) + 2))
             .on("tick", update);
 
@@ -249,12 +273,18 @@
 
           // pie chart
           const totalNutrients = parseFloat(data.fat) + parseFloat(data.carbs) + parseFloat(data.sugar) + parseFloat(data.protein); // Calculate the total nutrients
-          const pieData = [
-            { label: 'Fat', value: (parseFloat(data.fat) / totalNutrients) * 100 },
-            { label: 'Carbs', value: (parseFloat(data.carbs) / totalNutrients) * 100 },
-            { label: 'Sugar', value: (parseFloat(data.sugar) / totalNutrients) * 100 },
-            { label: 'Protein', value: (parseFloat(data.protein) / totalNutrients) * 100 }
-          ];
+          let pieData;
+          if (totalNutrients === 0) {
+            pieData = [{ label: 'No nutritional data available', value: 100 }];          
+          } else {
+              // Calculate the percentage values for each nutrient
+              pieData = [
+                  { label: 'Fat', value: (parseFloat(data.fat) / totalNutrients) * 100 },
+                  { label: 'Carbs', value: (parseFloat(data.carbs) / totalNutrients) * 100 },
+                  { label: 'Sugar', value: (parseFloat(data.sugar) / totalNutrients) * 100 },
+                  { label: 'Protein', value: (parseFloat(data.protein) / totalNutrients) * 100 }
+              ];
+          }
 
           const radius = 100;
           const customColors = ["#FFC72C", "#DA291C", "#A36440", "#68C260"];
