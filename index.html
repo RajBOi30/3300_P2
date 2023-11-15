@@ -2,99 +2,373 @@
 
 <head>
   <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    .category-button {
+      /* fill: #FFC72C; */
+    }
+
+    .category-text {
+      font-family: Helvetica Neue;
+      text-anchor: middle;
+      dominant-baseline: central;
+    }
+  </style>
 </head>
 
 <body>
-  <svg id="map" height="4000" width="6000" style="background:yellow"></svg>
-  <script>
+  <svg id="categories" height="70" width="1170" style="background: #27251F"></svg>
+  <svg id="ingredients" height="500" width="400" style="background:#27251F"></svg>
+  <svg id="map" height="500" width="770" style="background:#27251F; position:absolute"></svg>
 
-    //We created an object that will hold the relevant information for each item. 
-    function MenuItem(name, calories, ingredients, category) {
+  <script>
+    const svg = d3.select("#categories");
+    function MenuItem(name, calories, ingredients, category, fat, carbs, sugar, protein) {
       this.name = name;
       this.calories = calories;
       this.ingredients = ingredients;
       this.category = category;
+      this.fat = fat;
+      this.carbs = carbs;
+      this.sugar = sugar;
+      this.protein = protein;
+    }
+
+    const categories = [
+      "Breakfast",
+      "Beef & Pork",
+      "Chicken & Fish",
+      "Salads",
+      "Snacks & Sides",
+      "Desserts",
+      "Beverages",
+      "Coffee & Tea",
+      "Smoothies & Shakes"
+    ];
+
+    const buttonWidth = 120;
+    const buttonHeight = 50;
+    const padding = 10;
+    let lastClicked = null;
+    let currentCategory = "Breakfast";
+
+    function styleButtons() {
+      svg.selectAll(".category-button").attr("fill", "#FFC72C");
+      svg.selectAll(".category-text").attr("fill", "#27251F");
+      if (lastClicked) {
+        d3.select(lastClicked).attr("fill", "#DA291C");
+        d3.select(lastClicked.nextElementSibling).attr("fill", "white");
+      }
     }
 
     let menu = [];
+    map = d3.select("svg#map");
+    widthCalories = map.attr("width");
+    heightCalories = map.attr("height");
 
-    let items = [];
-    let calories = [];
-    var svg = d3.select("body")
-          .append("svg")
-          .attr("width", 6000)
-          .attr("height", 4000);
-    d3.csv("ingredients.csv").then(data => {
-      data.forEach(d => {
-        menu.push(new MenuItem(d.Item, 0, d.Ingredients));
-      });
-    });
-    d3.csv("nutrition.csv").then(data => {
-      //const extent = d3.extent(data, d => d.log_attempt);
+    d3.csv("ingredients.csv").then(ingredientsData => {
+      d3.csv("nutrition.csv").then(nutritionData => {
+        ingredientsData.forEach(ingredient => {
+          let item = new MenuItem(ingredient.Item, 0, ingredient.Ingredients);
+          let nutritionInfo = nutritionData.find(nutrition => nutrition.Item === ingredient.Item);
+          if (nutritionInfo) {
+            item.calories = nutritionInfo.Calories;
+            item.category = nutritionInfo.Category;
+            item.fat = nutritionInfo.Total_Fat;
+            item.carbs = nutritionInfo.Carbohydrates;
+            item.sugar = nutritionInfo.Sugars;
+            item.protein = nutritionInfo.Protein;
 
-      //const scale = d3.scaleSequential(d3.interpolateViridis).domain(extent);
-
-      //extract 'calories' values
-      const calories = data.map(d => parseFloat(d.Calories));
-
-      //scale for circle sizes
-      var sizeScale = d3.scaleLinear()
-          .domain([d3.min(calories), d3.max(calories)])
-          .range([10, 70]);  
-
-      console.log(calories);
-
-      function checkCollision(circles, newCircle) {
-          for (let i = 0; i < circles.length; i++) {
-              const existingCircle = circles[i];
-              const distance = Math.sqrt(
-                  Math.pow(newCircle.cx - existingCircle.cx, 2) +
-                  Math.pow(newCircle.cy - existingCircle.cy, 2)
-              );
-              if (distance < newCircle.r + existingCircle.r) {
-                  return true;  //if collision detected
-              }
           }
-          return false;  
-      }
+          menu.push(item);
+        });
 
-      //create a force simulation
-      var simulation = d3.forceSimulation(data)
-          .force("x", d3.forceX().strength(0.1).x(d => Math.random() * 500))  // Random x positions
-          .force("y", d3.forceY().strength(0.1).y(d => Math.random() * 500))  // Random y positions
-          .force("collide", d3.forceCollide().radius(function (d) {
-              return sizeScale(parseFloat(d.Calories));
-      }));
+        let selectedItem = menu.find(i => i.name === "Bacon, Egg & Cheese Biscuit (Regular Biscuit)");
+        function createCircleSVG() {
+          let subsetMenu = menu.filter(i => i.category === currentCategory);
+          const caloriesExtent = d3.extent(menu, d => d.calories);
+          const sizeScale = d3.scaleLinear()
+            .domain(caloriesExtent)
+            .range([5, 25]);
+
+          // Set random initial positions for circles
+
+          subsetMenu.forEach(d => {
+            d.x = Math.random() * widthCalories;
+            d.y = Math.random() * heightCalories;
+          });
+
+          let circles = map.selectAll("circle").data(subsetMenu)
+            .join("circle")
+            .attr("r", d => sizeScale(d.calories))
+            .attr("fill", "dodgerblue");
+
+          circles.on('mouseover', function (event, d) {
+            d3.select(this).attr("fill", "orange"); // Set the hover circle to orange
+            const tooltip = d3.select("#tooltip");
+
+            tooltip.transition()
+                .duration(200)
+                .style("opacity", .9);
+
+            tooltip.html(`<strong>${d.name}</strong><br>Calories: ${d.calories}`)
+                .style("left", (event.pageX) + "px")
+                .style("top", (event.pageY - 28) + "px");
+          });
+
+          circles.on('mouseout', function (event) {
+            d3.select(this).attr("fill", "dodgerblue"); // Reset the non-clicked circle to dodgerblue on hover out
+            d3.select("#tooltip").transition()
+            .duration(500)
+            .style("opacity", 0);
+          });
+
+        d3.select("body").append("div")
+            .attr("id", "tooltip")
+            .style("opacity", 0)
+            .style("position", "absolute")
+            .style("background-color", "white")
+            .style("border", "1px solid #ddd")
+            .style("border-radius", "5px")
+            .style("padding", "15px")  
+            .style("font-family", "Helvetica Neue") 
+            .style("text-anchor", "middle") 
+            .style("dominant-baseline", "central");  
 
 
-      //create circles
-      var circles = svg.selectAll("circle")
-          .data(data)
-          .enter().append("circle")
-          .attr("r", function (d) { return sizeScale(parseFloat(d.Calories)); })
-          .attr("fill", "steelblue");
+          let clickedCircleData; // Store data of the clicked circle
 
-      //update positions in each tick of the simulation
-      simulation.on("tick", function () {
-          circles.attr("cx", function (d) { return d.x; })
-              .attr("cy", function (d) { return d.y; });
-      });
+          circles.on('click', function (event, d) {
+            // Handle click on individual circle (d represents the data of the clicked circle)
+            selectedItem = d;
+            createPieChart(selectedItem);
+            circles.attr("fill", function (circleData) {
+              return circleData === d ? "orange" : "dodgerblue"; // Set only the clicked circle to orange
+            });
+          });
 
-      data.forEach(d => {
-        if (menu.find(i => i.name === d.Item)) {
-          menu.find(i => i.name === d.Item).calories = d.Calories;
-          menu.find(i => i.name === d.Item).category = d.Category;
+          const strengthFactor = Math.max(0.1, 10 / subsetMenu.length); 
+
+          let simulation = d3.forceSimulation(subsetMenu)
+              .force("charge", d3.forceManyBody().strength(50 * strengthFactor))  
+              .force("collision", d3.forceCollide().radius(d => sizeScale(d.calories) + 2))
+              .on("tick", update);
+
+          function update() {
+            circles.attr("cx", d => d.x)
+              .attr("cy", d => d.y);
+          }
+        }
+
+        const ingredients = d3.select('svg#ingredients');
+        const margins = { top: 40, right: 40, bottom: 40, left: 40 };
+        const titleWidth = ingredients.attr("width") - margins.right - margins.left;
+        const titleHeight = ingredients.attr("height") - margins.top - margins.bottom;
+        const chartWidth = ingredients.attr("width") - margins.right - margins.left;
+        const chartHeight = ingredients.attr("height") - margins.top - margins.bottom;
+
+
+        // wrap text function
+        function wrapText(text, width) {
+          text.each(function () {
+            let text = d3.select(this);
+            let words = text.text().split(/\s+/).reverse();
+            let line = [];
+            let lineNumber = 0;
+            let lineHeight = 1.1; // You might need to adjust this value based on font size
+            let y = text.attr("y");
+            let x = text.attr("x");
+            let dy = parseFloat(text.attr("dy") || 0);
+
+            let tspan = text.text(null).append("tspan").attr("x", x).attr("y", y).attr("dy", dy + "em");
+
+            let word = words.pop();
+            while (word) {
+              line.push(word);
+              tspan.text(line.join(" "));
+              if (tspan.node().getComputedTextLength() > width && line.length > 1) {
+                line.pop();
+                tspan.text(line.join(" "));
+                line = [word];
+                tspan = text.append("tspan").attr("x", x).attr("y", y).attr("dy", ++lineNumber * lineHeight + dy + "em").text(word);
+              }
+              word = words.pop();
+            }
+          });
+        }
+
+        // Create Pie Chart Function
+        function createPieChart(data) {
+          // Remove existing pie chart elements
+          d3.select('#ingredients').selectAll("*").remove();
+          let ingredientsList = selectedItem.ingredients.split(",");
+
+          // add menu item name
+          const maxTextWidth = titleWidth - (margins.left + margins.right); // Calculate the available width
+          const textElement = ingredients.append('text')
+            .text(selectedItem.name.toUpperCase())
+            .attr('x', margins.left)
+            .attr('y', margins.top + 20)
+            .style('font-family', 'Arial')
+            .style('font-weight', 'bold')
+            .style('font-size', '20')
+            .style("text-anchor", "start")
+            .style('fill', 'white');
+
+          // wrap the title
+          wrapText(textElement, maxTextWidth);
+
+          ingredients.append('text')
+            .text("Ingredients")
+            .attr('x', margins.left)
+            .attr('y', margins.top + 100)
+            .style('font-family', 'Arial')
+            .style('font-weight', 'bold')
+            .style('font-size', '16')
+            .style("text-anchor", "start")
+            .style('fill', 'white');
+
+          ingredientsList.forEach((ingredient, index) => {
+            console.log(ingredient);
+            ingredients.append('text')
+              .text(ingredient.trim()) // Trim any extra whitespace
+              .attr('x', margins.left)
+              .attr('y', margins.top + 120 + index * 20) // Adjust vertical positioning
+              .style('font-family', 'Arial')
+              .style('font-size', '16px') // Added 'px' for font size
+              .style("text-anchor", "start")
+              .style('fill', 'white');
+          });
+
+          const totalNutrients = parseFloat(data.fat) + parseFloat(data.carbs) + parseFloat(data.sugar) + parseFloat(data.protein); // Calculate the total nutrients
+          let pieData;
+          if (totalNutrients === 0) {
+              // If total nutrients is 0, set all values to 0
+              pieData = [
+                  { label: 'Fat', value: 0 },
+                  { label: 'Carbs', value: 0 },
+                  { label: 'Sugar', value: 0 },
+                  { label: 'Protein', value: 0 }
+              ];
+          } else {
+              // Calculate the percentage values for each nutrient
+              pieData = [
+                  { label: 'Fat', value: (parseFloat(data.fat) / totalNutrients) * 100 },
+                  { label: 'Carbs', value: (parseFloat(data.carbs) / totalNutrients) * 100 },
+                  { label: 'Sugar', value: (parseFloat(data.sugar) / totalNutrients) * 100 },
+                  { label: 'Protein', value: (parseFloat(data.protein) / totalNutrients) * 100 }
+              ];
+          }
+
+          const width = 400; // Adjust the width of the SVG for the pie chart
+          const height = 700; // Adjust the height of the SVG for the pie chart
+          const radius = 100;
+
+          const color = d3.scaleOrdinal(d3.schemeCategory10);
+
+          const pieChart = d3.select('#ingredients');
+
+          const pie = d3.pie().value(d => d.value);
+
+          const path = d3.arc()
+            .outerRadius(radius - 10)
+            .innerRadius(radius - 40);
+
+          const arc = pieChart.append('g')
+            .attr('transform', `translate(${radius + 30},${radius + 250})`) // Adjust the translation to offset the pie chart
+            .selectAll('arc')
+            .data(pie(pieData))
+            .enter()
+            .append('g');
+
+          arc.append('path')
+            .attr('d', path)
+            .attr('fill', (d, i) => color(i));
+
+          // Create the legend
+          const legend = pieChart.append('g')
+            .attr('transform', `translate(${width - 160}, 300)`); // Adjust the position of the legend
+
+          const legendItems = legend.selectAll('.legend')
+            .data(pieData)
+            .enter()
+            .append('g')
+            .attr('class', 'legend')
+            .attr('transform', (d, i) => `translate(0,${i * 20})`); // Adjust spacing between legend items
+
+          legendItems.append('rect')
+            .attr('x', 0)
+            .attr('y', -7)
+            .attr('width', 10)
+            .attr('height', 10)
+            .attr('fill', (d, i) => color(i));
+
+          legendItems.append('text')
+            .attr('x', 15)
+            .text(d => `${d.label}: ${d.value.toFixed(2)}%`)
+            .style('font-family', 'Arial')
+            .style('font-size', '12px') // Added 'px' for font size
+            .style("text-anchor", "start")
+            .style('fill', 'white')
+            .attr('dy', '0.25em');
+        }
+
+
+
+        // Usage to create the pie chart for the selected item
+        createPieChart(selectedItem); // Create the pie chart for the selected item's nutritional values
+
+        //code for categories
+        categories.forEach((category, index) => {
+          const x = index * (buttonWidth + padding);
+          const button = svg.append("rect")
+            .attr("x", x + 5)
+            .attr("y", 10)
+            .attr("width", buttonWidth)
+            .attr("height", buttonHeight)
+            .attr("rx", 20)
+            .attr("ry", 20)
+            .attr("id", category.toLowerCase().replace(/\s/g, "_"))
+            .attr("class", "category-button")
+            .on("click", function () {
+              filterCategory(category);
+              currentCategory = category;
+              lastClicked = this;
+              styleButtons();
+              createCircleSVG();
+            });
+
+          svg.append("text")
+            .attr("x", x + (buttonWidth / 2) + 5)
+            .attr("y", 35)
+            .attr("fill", "#27251F")
+            .attr("font-size", 14)
+            .attr("class", "category-text")
+            .text(category !== "Smoothies & Shakes" ? category : "Smoothies")
+            .attr("id", category.toLowerCase().replace(/\s/g, "_") + "text")
+            .attr("text-anchor", "middle")
+            .attr("dominant-baseline", "central")
+            .on("click", function () {
+              button.dispatch("click");
+            });
+        });
+
+        styleButtons();
+
+        svg.selectAll(".category-button")
+          .attr("cursor", "pointer");
+
+        function filterCategory(category) {
+          let filteredItems = menu.filter(item => item.category === category);
+          if (filteredItems.length > 0) {
+            console.log(`Items in category '${category}':`, filteredItems);
+          } else {
+            console.log(`No items found in category '${category}'`);
+          }
         }
       });
     });
-
-    // Strawberry Banana Smoothie (Medium)
-    // menu.find(i => i.name === d.Item).category = d.Category;
-
-
-    // console.log(items);
-    // console.log(calories.length); 
   </script>
+
 </body>
 
 </html>
