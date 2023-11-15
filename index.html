@@ -61,7 +61,7 @@
       // Set the initial style for the "Breakfast" category button
       const breakfastButton = d3.select("#Breakfast");
       const breakfastButtonText = d3.select("#Breakfasttext");
-      
+
       if (currentCategory === "Breakfast") {
         breakfastButton.attr("fill", "#DA291C");
         breakfastButtonText.attr("fill", "white");
@@ -70,7 +70,7 @@
       if (lastClicked) {
         d3.select(lastClicked).attr("fill", "#DA291C");
         d3.select(lastClicked.nextElementSibling).attr("fill", "white");
-    }
+      }
     }
 
     let menu = [];
@@ -131,22 +131,22 @@
           let clickedCircleData; // Store data of the clicked circle
 
           circles.on('click', function (event, d) {
-          // Handle click on individual circle (d represents the data of the clicked circle)
-          selectedItem = d;
-          createPieChart(selectedItem);
+            // Handle click on individual circle (d represents the data of the clicked circle)
+            selectedItem = d;
+            createPieChart(selectedItem);
 
-          // Reset the color of the previously clicked circle
-          if (clickedCircleData) {
-            map.selectAll("circle").filter(data => data === clickedCircleData)
-              .attr("fill", "#DA291C");
-          }
+            // Reset the color of the previously clicked circle
+            if (clickedCircleData) {
+              map.selectAll("circle").filter(data => data === clickedCircleData)
+                .attr("fill", "#DA291C");
+            }
 
-      // Set the color of the clicked circle to white
-      d3.select(this).attr("fill", "white");
+            // Set the color of the clicked circle to white
+            d3.select(this).attr("fill", "white");
 
-      // Update the clicked circle data
-      clickedCircleData = d;
-    });
+            // Update the clicked circle data
+            clickedCircleData = d;
+          });
 
           let simulation = d3.forceSimulation(subsetMenu)
             .force("charge", d3.forceManyBody().strength(15))
@@ -216,8 +216,8 @@
 
           // wrap the title
           wrapText(textElement, maxTextWidth);
-           // list ingredients
-        ingredients.append('text')
+          // list ingredients
+          ingredients.append('text')
             .text("Ingredients")
             .attr('x', margins.left)
             .attr('y', margins.top + 340)
@@ -229,21 +229,21 @@
 
           // let currentVerticalPosition = margins.top + 360;
           //const lineHeight = 1.2;
-        //   let currentVerticalPosition = margins.top + 360;
-        // const lineHeight = 1.5;
+          //   let currentVerticalPosition = margins.top + 360;
+          // const lineHeight = 1.5;
           ingredientsList.forEach((ingredient, index) => {
             console.log(ingredient);
             ingredients.append('text')
               .text(ingredient.trim()) // Trim any extra whitespace
               .attr('x', margins.left)
-              .attr('y',  margins.top + 360 + index * 20) // Adjust vertical positioning
+              .attr('y', margins.top + 360 + index * 20) // Adjust vertical positioning
               .style('font-family', 'Arial')
               .style('font-size', '16px') // Added 'px' for font size
               .style("text-anchor", "start")
               .style('fill', 'white');
-              //.call(wrapText, maxTextWidth);
-              // const textHeight = textElement.node().getBBox().height;
-              // currentVerticalPosition += textHeight * lineHeight + 20;;
+            //.call(wrapText, maxTextWidth);
+            // const textHeight = textElement.node().getBBox().height;
+            // currentVerticalPosition += textHeight * lineHeight + 20;;
           });
 
 
@@ -310,8 +310,6 @@
 
         // create pie chart
         // createPieChart(selectedItem); 
-
-       
         //code for categories
         categories.forEach((category, index) => {
           const x = index * (buttonWidth + padding);
@@ -362,10 +360,9 @@
         }
         createCircleSVG();
       });
-      
+
     });
   </script>
-
 </body>
 
 </html>
