@@ -16,12 +16,12 @@
 </head>
 
 <body>
-  <svg id="categories" height="70" width="1370" style="background: #27251F"></svg>
+  <svg id="categories" height="70" width="1420" style="background: #27251F"></svg>
   <!-- <svg id="ingredients" height="800" width="400" style="background:#27251F"></svg>
   <svg id="map" height="500" width="770" style="background:#27251F; position:absolute"></svg> -->
   <div style="display: flex;">
     <svg id="map" height="750" width="770" style="background:#27251F;"></svg>
-    <svg id="ingredients" height="750" width="600" style="background:#27251F;"></svg>
+    <svg id="ingredients" height="750" width="650" style="background:#27251F;"></svg>
   </div>
   <script>
     const svg = d3.select("#categories");
@@ -344,9 +344,9 @@
 
         //code for categories
         categories.forEach((category, index) => {
-          const x = index * (buttonWidth + padding);
+          const x = index * (buttonWidth + padding + 20);
           const button = svg.append("rect")
-            .attr("x", x + 5)
+            .attr("x", x + 50)
             .attr("y", 10)
             .attr("width", buttonWidth)
             .attr("height", buttonHeight)
@@ -363,7 +363,7 @@
             });
 
           svg.append("text")
-            .attr("x", x + (buttonWidth / 2) + 5)
+            .attr("x", x + (buttonWidth / 2) + 50)
             .attr("y", 30)
             .attr("fill", "#27251F")
             .attr("font-size", 14)
