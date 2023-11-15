@@ -344,9 +344,9 @@
 
         //code for categories
         categories.forEach((category, index) => {
-          const x = index * (buttonWidth + padding);
+          const x = index * (buttonWidth + padding + 20);
           const button = svg.append("rect")
-            .attr("x", x + 5)
+            .attr("x", x + 50)
             .attr("y", 10)
             .attr("width", buttonWidth)
             .attr("height", buttonHeight)
@@ -363,7 +363,7 @@
             });
 
           svg.append("text")
-            .attr("x", x + (buttonWidth / 2) + 5)
+            .attr("x", x + (buttonWidth / 2) + 50)
             .attr("y", 30)
             .attr("fill", "#27251F")
             .attr("font-size", 14)
