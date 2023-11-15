@@ -24,6 +24,7 @@
     <svg id="ingredients" height="750" width="600" style="background:#27251F;"></svg>
   </div>
   <script>
+    
     const svg = d3.select("#categories");
     function MenuItem(name, calories, ingredients, category, fat, carbs, sugar, protein) {
       this.name = name;
@@ -95,8 +96,10 @@
           menu.push(item);
         });
 
+
         // let selectedItem = menu.find(i => i.name === "Bacon, Egg & Cheese Biscuit (Regular Biscuit)");
         let selectedItem;
+        
         function createCircleSVG() {
           let subsetMenu = menu.filter(i => i.category === currentCategory);
           const caloriesExtent = d3.extent(menu, d => d.calories);
@@ -216,6 +219,7 @@
 
           // wrap the title
           wrapText(textElement, maxTextWidth);
+          
            // list ingredients
         ingredients.append('text')
             .text("Ingredients")
@@ -227,16 +231,20 @@
             .style("text-anchor", "start")
             .style('fill', 'white');
 
+
           // let currentVerticalPosition = margins.top + 360;
           //const lineHeight = 1.2;
         //   let currentVerticalPosition = margins.top + 360;
         // const lineHeight = 1.5;
+
           ingredientsList.forEach((ingredient, index) => {
             console.log(ingredient);
             ingredients.append('text')
               .text(ingredient.trim()) // Trim any extra whitespace
               .attr('x', margins.left)
+
               .attr('y',  margins.top + 360 + index * 20) // Adjust vertical positioning
+
               .style('font-family', 'Arial')
               .style('font-size', '16px') // Added 'px' for font size
               .style("text-anchor", "start")
@@ -284,6 +292,7 @@
           const legend = pieChart.append('g')
             .attr('transform', `translate(${chartWidth - 160}, 200)`); // Adjust the position of the legend
 
+
           const legendItems = legend.selectAll('.legend')
             .data(pieData)
             .enter()
@@ -308,10 +317,8 @@
             .attr('dy', '0.25em');
         }
 
-        // create pie chart
-        // createPieChart(selectedItem); 
 
-       
+        createPieChart(selectedItem); // Create the pie chart for the selected item's nutritional values
         //code for categories
         categories.forEach((category, index) => {
           const x = index * (buttonWidth + padding);
@@ -362,7 +369,6 @@
         }
         createCircleSVG();
       });
-      
     });
   </script>
 
