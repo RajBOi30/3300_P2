@@ -31,7 +31,7 @@
 <body>
   <div style="width:1420;background:#27251F">
     <h1>McDonald's Menu Items and Nutritional Facts</h1>
-    <h4>Click on a bubble to view ingredient information for McDonalds menu items.</h4>
+    <h4>Select a category and click on a bubble to view ingredient information for McDonalds menu items.</h4>
     <svg id="categories" height="70" width="1420"></svg>
   </div>
   <div style="display: flex;">
@@ -74,7 +74,7 @@
       svg.selectAll(".category-button").attr("fill", "#FFC72C");
       svg.selectAll(".category-text").attr("fill", "#27251F");
 
- 
+
       const breakfastButton = d3.select("#Breakfast");
       const breakfastButtonText = d3.select("#Breakfasttext");
 
@@ -96,15 +96,15 @@
     heightCalories = map.attr("height");
 
     sequence.append('text')
-            .text("Calorie Count")
-            .attr('x', 30)
-            .attr('y', 30)
-            .style('font-family', 'Arial')
-            .style('font-weight', 'bold')
-            .style('font-size', '16')
-            .style("text-anchor", "start")
-            .style('fill', 'white');
-    
+      .text("Calorie Count")
+      .attr('x', 30)
+      .attr('y', 30)
+      .style('font-family', 'Arial')
+      .style('font-weight', 'bold')
+      .style('font-size', '16')
+      .style("text-anchor", "start")
+      .style('fill', 'white');
+
 
     d3.csv("ingredients.csv").then(ingredientsData => {
       d3.csv("nutrition.csv").then(nutritionData => {
@@ -128,9 +128,9 @@
         function createCircleSVG() {
           let subsetMenu = menu.filter(i => i.category === currentCategory);
           let longIngredientsItems = subsetMenu.filter(item => {
-        const ingredientsArray = item.ingredients.split(',').map(ingredient => ingredient.trim());
-        return ingredientsArray.some(ingredient => ingredient.length > 58);
-      });
+            const ingredientsArray = item.ingredients.split(',').map(ingredient => ingredient.trim());
+            return ingredientsArray.some(ingredient => ingredient.length > 58);
+          });
 
           if (longIngredientsItems.length > 0) {
             console.log("Menu items with at least one ingredient longer than 63 characters:", longIngredientsItems);
@@ -138,10 +138,10 @@
             console.log("No menu items found with at least one ingredient longer than 63 characters.");
           }
 
-        subsetMenu = subsetMenu.filter(item => {
-          const ingredientsArray = item.ingredients.split(',').map(ingredient => ingredient.trim());
-          return !ingredientsArray.some(ingredient => ingredient.length > 58);
-        });
+          subsetMenu = subsetMenu.filter(item => {
+            const ingredientsArray = item.ingredients.split(',').map(ingredient => ingredient.trim());
+            return !ingredientsArray.some(ingredient => ingredient.length > 58);
+          });
 
           const caloriesExtent = d3.extent(menu, d => d.calories);
           const sizeScale = d3.scaleLinear()
@@ -177,13 +177,13 @@
           });
 
           circles.on('mouseout', function (event, d) {
-          if (clickedCircleData !== d) {
-            d3.select(this).attr("fill", colorScale(d.calories));
-            d3.select("#tooltip").transition()
-              .duration(500)
-              .style("opacity", 0);
-          }
-        });
+            if (clickedCircleData !== d) {
+              d3.select(this).attr("fill", colorScale(d.calories));
+              d3.select("#tooltip").transition()
+                .duration(500)
+                .style("opacity", 0);
+            }
+          });
 
           d3.select("body").append("div")
             .attr("id", "tooltip")
@@ -198,20 +198,20 @@
             .style("text-anchor", "middle")
             .style("dominant-baseline", "central");
 
-          let clickedCircleData; 
+          let clickedCircleData;
 
           circles.on('click', function (event, d) {
-            
+
             selectedItem = d;
             createPieChart(selectedItem);
 
-           
+
             if (clickedCircleData) {
               map.selectAll("circle").filter(data => data === clickedCircleData)
                 .attr("fill", colorScale(clickedCircleData.calories));
             }
 
-           
+
             d3.select(this).attr("fill", "white");
 
             // Update the clicked circle data
@@ -250,13 +250,13 @@
         const legendHeight = heightCalories;
         const legendBarHeight = 200;
         const legendScale = d3.scaleLinear()
-          .domain([0, 1880]) 
+          .domain([0, 1880])
           .range([legendBarHeight, 0]);
 
         const legend = sequence.append("g")
-        .attr("class", "legend")
-        .attr("transform", `translate(${padding + 20}, ${heightCalories / 2 - legendBarHeight * 1.65})`); // Adjust the positioning
-        
+          .attr("class", "legend")
+          .attr("transform", `translate(${padding + 20}, ${heightCalories / 2 - legendBarHeight * 1.65})`); // Adjust the positioning
+
 
         // Create a vertical color scale
         const legendColorScale = d3.scaleSequential()
@@ -264,7 +264,7 @@
           .interpolator(d3.interpolate("#FFD953", "#DA291C"));
 
         const legendBars = legend.selectAll(".legend-bar")
-          .data(d3.range(legendBarHeight, 0, -1)) 
+          .data(d3.range(legendBarHeight, 0, -1))
           .enter().append("rect")
           .attr("class", "legend-bar")
           .attr("width", legendWidth)
@@ -275,7 +275,7 @@
 
         // Add text labels to the legend
         const legendLabels = legend.selectAll(".legend-label")
-          .data(d3.range(0, 1881, 400)) 
+          .data(d3.range(0, 1881, 400))
           .enter().append("text")
           .attr("class", "legend-label")
           .attr("x", legendWidth + 5)
@@ -292,7 +292,7 @@
             let words = text.text().split(/\s+/).reverse();
             let line = [];
             let lineNumber = 0;
-            let lineHeight = 1.1; 
+            let lineHeight = 1.1;
             let y = text.attr("y");
             let x = text.attr("x");
             let dy = parseFloat(text.attr("dy") || 0);
@@ -321,7 +321,7 @@
           let ingredientsList = selectedItem.ingredients.split(",");
 
           // add menu item name
-          const maxTextWidth = titleWidth - (margins.left + margins.right); 
+          const maxTextWidth = titleWidth - (margins.left + margins.right);
           const textElement = ingredients.append('text')
             .text(selectedItem.name.toUpperCase())
             .attr('x', margins.left)
@@ -345,18 +345,18 @@
             .style("text-anchor", "start")
             .style('fill', 'white');
 
-          
+
           ingredientsList.forEach((ingredient, index) => {
             console.log(ingredient);
             ingredients.append('text')
-              .text(ingredient.trim()) 
+              .text(ingredient.trim())
               .attr('x', margins.left)
-              .attr('y', margins.top + 360 + index * 20) 
+              .attr('y', margins.top + 360 + index * 20)
               .style('font-family', 'Arial')
-              .style('font-size', '16px') 
+              .style('font-size', '16px')
               .style("text-anchor", "start")
               .style('fill', 'white');
-         
+
           });
 
 
@@ -389,7 +389,7 @@
             .innerRadius(radius - 40);
 
           const arc = pieChart.append('g')
-            .attr('transform', `translate(${radius + 30},${radius + 150})`) 
+            .attr('transform', `translate(${radius + 30},${radius + 150})`)
             .selectAll('arc')
             .data(pie(pieData))
             .enter()
@@ -401,14 +401,14 @@
 
           // Create the legend
           const legend = pieChart.append('g')
-            .attr('transform', `translate(${chartWidth - 160}, 200)`); 
+            .attr('transform', `translate(${chartWidth - 160}, 200)`);
 
           const legendItems = legend.selectAll('.legend')
             .data(pieData)
             .enter()
             .append('g')
             .attr('class', 'legend')
-            .attr('transform', (d, i) => `translate(0,${i * 20})`); 
+            .attr('transform', (d, i) => `translate(0,${i * 20})`);
 
           legendItems.append('rect')
             .attr('x', 0)
@@ -421,7 +421,7 @@
             .attr('x', 15)
             .text(d => `${d.label}: ${d.value.toFixed(2)}%`)
             .style('font-family', 'Arial')
-            .style('font-size', '12px') 
+            .style('font-size', '12px')
             .style("text-anchor", "start")
             .style('fill', 'white')
             .attr('dy', '0.25em');
