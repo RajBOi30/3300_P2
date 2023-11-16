@@ -13,17 +13,20 @@
       dominant-baseline: central;
     }
 
-    h1{
+    h1 {
       font-family: Helvetica Neue;
       text-align: center;
-      color: #27251F;
+      color: white;
+      padding-top: 20px;
     }
   </style>
 </head>
 
 <body>
-  <h1>McDonald's Menu Items and Nutritional Facts</h1>
-  <svg id="categories" height="70" width="1420" style="background: #27251F"></svg>
+  <div style="width:1420;background:#27251F">
+    <h1>McDonald's Menu Items and Nutritional Facts</h1>
+    <svg id="categories" height="70" width="1420"></svg>
+  </div>
   <!-- <svg id="ingredients" height="800" width="400" style="background:#27251F"></svg>
   <svg id="map" height="500" width="770" style="background:#27251F; position:absolute"></svg> -->
   <div style="display: flex;">
@@ -107,29 +110,29 @@
         function createCircleSVG() {
           let subsetMenu = menu.filter(i => i.category === currentCategory);
           let longIngredientsItems = subsetMenu.filter(item => {
-    const ingredientsArray = item.ingredients.split(',').map(ingredient => ingredient.trim());
-    return ingredientsArray.some(ingredient => ingredient.length > 63);
-  });
+            const ingredientsArray = item.ingredients.split(',').map(ingredient => ingredient.trim());
+            return ingredientsArray.some(ingredient => ingredient.length > 63);
+          });
 
-        if (longIngredientsItems.length > 0) {
-          console.log("Menu items with at least one ingredient longer than 63 characters:", longIngredientsItems);
-        } else {
-          console.log("No menu items found with at least one ingredient longer than 63 characters.");
-        }
+          if (longIngredientsItems.length > 0) {
+            console.log("Menu items with at least one ingredient longer than 63 characters:", longIngredientsItems);
+          } else {
+            console.log("No menu items found with at least one ingredient longer than 63 characters.");
+          }
 
 
-        subsetMenu = subsetMenu.filter(item => {
-          const ingredientsArray = item.ingredients.split(',').map(ingredient => ingredient.trim());
-          return !ingredientsArray.some(ingredient => ingredient.length > 63);
-        });
+          subsetMenu = subsetMenu.filter(item => {
+            const ingredientsArray = item.ingredients.split(',').map(ingredient => ingredient.trim());
+            return !ingredientsArray.some(ingredient => ingredient.length > 63);
+          });
           const caloriesExtent = d3.extent(menu, d => d.calories);
           const sizeScale = d3.scaleLinear()
             .domain(caloriesExtent)
             .range([25, 50]);
 
           const colorScale = d3.scaleSequential()
-          .domain(caloriesExtent)
-          .interpolator(d3.interpolate("#FFD953", "#DA291C"));
+            .domain(caloriesExtent)
+            .interpolator(d3.interpolate("#FFD953", "#DA291C"));
 
           subsetMenu.forEach(d => {
             d.x = Math.random() * widthCalories;
@@ -137,9 +140,9 @@
           });
 
           let circles = map.selectAll("circle").data(subsetMenu)
-  .join("circle")
-  .attr("r", d => sizeScale(d.calories))
-  .attr("fill", d => colorScale(d.calories));
+            .join("circle")
+            .attr("r", d => sizeScale(d.calories))
+            .attr("fill", d => colorScale(d.calories));
 
           circles.on('mouseover', function (event, d) {
             if (clickedCircleData !== d) {
@@ -156,13 +159,13 @@
           });
 
           circles.on('mouseout', function (event, d) {
-  if (clickedCircleData !== d) {
-    d3.select(this).attr("fill", colorScale(d.calories));
-    d3.select("#tooltip").transition()
-      .duration(500)
-      .style("opacity", 0);
-  }
-});
+            if (clickedCircleData !== d) {
+              d3.select(this).attr("fill", colorScale(d.calories));
+              d3.select("#tooltip").transition()
+                .duration(500)
+                .style("opacity", 0);
+            }
+          });
           d3.select("body").append("div")
             .attr("id", "tooltip")
             .style("opacity", 0)
@@ -186,7 +189,7 @@
             // Reset the color of the previously clicked circle
             if (clickedCircleData) {
               map.selectAll("circle").filter(data => data === clickedCircleData)
-  .attr("fill", colorScale(clickedCircleData.calories));
+                .attr("fill", colorScale(clickedCircleData.calories));
             }
 
             // Set the color of the clicked circle to white
@@ -426,7 +429,7 @@
         }
         createCircleSVG();
       });
-      
+
     });
   </script>
 
