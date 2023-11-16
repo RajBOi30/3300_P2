@@ -13,17 +13,27 @@
       dominant-baseline: central;
     }
 
-    h1{
+    h1 {
       font-family: Helvetica Neue;
       text-align: center;
-      color: #27251F;
+      color: white;
+      padding-top: 20px;
+    }
+
+    h4 {
+      font-family: Helvetica Neue;
+      text-align: center;
+      color: white;
     }
   </style>
 </head>
 
 <body>
-  <h1>McDonald's Menu Items and Nutritional Facts</h1>
-  <svg id="categories" height="70" width="1420" style="background: #27251F"></svg>
+  <div style="width:1420;background:#27251F">
+    <h1>McDonald's Menu Items and Nutritional Facts</h1>
+    <h4>Click on a bubble to view ingredient information for McDonalds menu items.</h4>
+    <svg id="categories" height="70" width="1420"></svg>
+  </div>
   <div style="display: flex;">
     <svg id="sequence" height="750" width="140" style="background:#27251F;"></svg>
     <svg id="map" height="750" width="730" style="background:#27251F;"></svg>
@@ -122,20 +132,25 @@
         return ingredientsArray.some(ingredient => ingredient.length > 58);
       });
 
-
+          if (longIngredientsItems.length > 0) {
+            console.log("Menu items with at least one ingredient longer than 63 characters:", longIngredientsItems);
+          } else {
+            console.log("No menu items found with at least one ingredient longer than 63 characters.");
+          }
 
         subsetMenu = subsetMenu.filter(item => {
           const ingredientsArray = item.ingredients.split(',').map(ingredient => ingredient.trim());
           return !ingredientsArray.some(ingredient => ingredient.length > 58);
         });
+
           const caloriesExtent = d3.extent(menu, d => d.calories);
           const sizeScale = d3.scaleLinear()
             .domain(caloriesExtent)
             .range([25, 50]);
 
           const colorScale = d3.scaleSequential()
-          .domain(caloriesExtent)
-          .interpolator(d3.interpolate("#FFD953", "#DA291C"));
+            .domain(caloriesExtent)
+            .interpolator(d3.interpolate("#FFD953", "#DA291C"));
 
           subsetMenu.forEach(d => {
             d.x = Math.random() * widthCalories;
@@ -169,6 +184,7 @@
               .style("opacity", 0);
           }
         });
+
           d3.select("body").append("div")
             .attr("id", "tooltip")
             .style("opacity", 0)
@@ -192,7 +208,7 @@
            
             if (clickedCircleData) {
               map.selectAll("circle").filter(data => data === clickedCircleData)
-  .attr("fill", colorScale(clickedCircleData.calories));
+                .attr("fill", colorScale(clickedCircleData.calories));
             }
 
            
@@ -465,7 +481,7 @@
         }
         createCircleSVG();
       });
-      
+
     });
   </script>
 
