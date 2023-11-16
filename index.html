@@ -34,11 +34,10 @@
     <h4>Click on a bubble to view ingredient information for McDonalds menu items.</h4>
     <svg id="categories" height="70" width="1420"></svg>
   </div>
-  <!-- <svg id="ingredients" height="800" width="400" style="background:#27251F"></svg>
-  <svg id="map" height="500" width="770" style="background:#27251F; position:absolute"></svg> -->
   <div style="display: flex;">
-    <svg id="map" height="750" width="770" style="background:#27251F;"></svg>
-    <svg id="ingredients" height="750" width="650" style="background:#27251F;"></svg>
+    <svg id="sequence" height="750" width="140" style="background:#27251F;"></svg>
+    <svg id="map" height="750" width="730" style="background:#27251F;"></svg>
+    <svg id="ingredients" height="750" width="550" style="background:#27251F;"></svg>
   </div>
   <script>
     const svg = d3.select("#categories");
@@ -75,7 +74,7 @@
       svg.selectAll(".category-button").attr("fill", "#FFC72C");
       svg.selectAll(".category-text").attr("fill", "#27251F");
 
-      // Set the initial style for the "Breakfast" category button
+ 
       const breakfastButton = d3.select("#Breakfast");
       const breakfastButtonText = d3.select("#Breakfasttext");
 
@@ -92,8 +91,20 @@
 
     let menu = [];
     map = d3.select("svg#map");
+    sequence = d3.select("svg#sequence");
     widthCalories = map.attr("width");
     heightCalories = map.attr("height");
+
+    sequence.append('text')
+            .text("Calorie Count")
+            .attr('x', 30)
+            .attr('y', 30)
+            .style('font-family', 'Arial')
+            .style('font-weight', 'bold')
+            .style('font-size', '16')
+            .style("text-anchor", "start")
+            .style('fill', 'white');
+    
 
     d3.csv("ingredients.csv").then(ingredientsData => {
       d3.csv("nutrition.csv").then(nutritionData => {
@@ -112,14 +123,14 @@
           menu.push(item);
         });
 
-        // let selectedItem = menu.find(i => i.name === "Bacon, Egg & Cheese Biscuit (Regular Biscuit)");
+
         let selectedItem;
         function createCircleSVG() {
           let subsetMenu = menu.filter(i => i.category === currentCategory);
           let longIngredientsItems = subsetMenu.filter(item => {
-            const ingredientsArray = item.ingredients.split(',').map(ingredient => ingredient.trim());
-            return ingredientsArray.some(ingredient => ingredient.length > 63);
-          });
+        const ingredientsArray = item.ingredients.split(',').map(ingredient => ingredient.trim());
+        return ingredientsArray.some(ingredient => ingredient.length > 58);
+      });
 
           if (longIngredientsItems.length > 0) {
             console.log("Menu items with at least one ingredient longer than 63 characters:", longIngredientsItems);
@@ -127,11 +138,11 @@
             console.log("No menu items found with at least one ingredient longer than 63 characters.");
           }
 
+        subsetMenu = subsetMenu.filter(item => {
+          const ingredientsArray = item.ingredients.split(',').map(ingredient => ingredient.trim());
+          return !ingredientsArray.some(ingredient => ingredient.length > 58);
+        });
 
-          subsetMenu = subsetMenu.filter(item => {
-            const ingredientsArray = item.ingredients.split(',').map(ingredient => ingredient.trim());
-            return !ingredientsArray.some(ingredient => ingredient.length > 63);
-          });
           const caloriesExtent = d3.extent(menu, d => d.calories);
           const sizeScale = d3.scaleLinear()
             .domain(caloriesExtent)
@@ -166,13 +177,14 @@
           });
 
           circles.on('mouseout', function (event, d) {
-            if (clickedCircleData !== d) {
-              d3.select(this).attr("fill", colorScale(d.calories));
-              d3.select("#tooltip").transition()
-                .duration(500)
-                .style("opacity", 0);
-            }
-          });
+          if (clickedCircleData !== d) {
+            d3.select(this).attr("fill", colorScale(d.calories));
+            d3.select("#tooltip").transition()
+              .duration(500)
+              .style("opacity", 0);
+          }
+        });
+
           d3.select("body").append("div")
             .attr("id", "tooltip")
             .style("opacity", 0)
@@ -186,20 +198,20 @@
             .style("text-anchor", "middle")
             .style("dominant-baseline", "central");
 
-          let clickedCircleData; // Store data of the clicked circle
+          let clickedCircleData; 
 
           circles.on('click', function (event, d) {
-            // Handle click on individual circle (d represents the data of the clicked circle)
+            
             selectedItem = d;
             createPieChart(selectedItem);
 
-            // Reset the color of the previously clicked circle
+           
             if (clickedCircleData) {
               map.selectAll("circle").filter(data => data === clickedCircleData)
                 .attr("fill", colorScale(clickedCircleData.calories));
             }
 
-            // Set the color of the clicked circle to white
+           
             d3.select(this).attr("fill", "white");
 
             // Update the clicked circle data
@@ -234,6 +246,44 @@
         const chartWidth = ingredients.attr("width") - margins.right - margins.left;
         const chartHeight = ingredients.attr("height") - margins.top - margins.bottom;
 
+        const legendWidth = 20;
+        const legendHeight = heightCalories;
+        const legendBarHeight = 200;
+        const legendScale = d3.scaleLinear()
+          .domain([0, 1880]) 
+          .range([legendBarHeight, 0]);
+
+        const legend = sequence.append("g")
+        .attr("class", "legend")
+        .attr("transform", `translate(${padding + 20}, ${heightCalories / 2 - legendBarHeight * 1.65})`); // Adjust the positioning
+        
+
+        // Create a vertical color scale
+        const legendColorScale = d3.scaleSequential()
+          .domain([0, 1880]) // Adjust the domain based on your data
+          .interpolator(d3.interpolate("#FFD953", "#DA291C"));
+
+        const legendBars = legend.selectAll(".legend-bar")
+          .data(d3.range(legendBarHeight, 0, -1)) 
+          .enter().append("rect")
+          .attr("class", "legend-bar")
+          .attr("width", legendWidth)
+          .attr("height", 1)
+          .attr("x", 0)
+          .attr("y", d => d)
+          .attr("fill", d => legendColorScale(legendScale.invert(d)));
+
+        // Add text labels to the legend
+        const legendLabels = legend.selectAll(".legend-label")
+          .data(d3.range(0, 1881, 400)) 
+          .enter().append("text")
+          .attr("class", "legend-label")
+          .attr("x", legendWidth + 5)
+          .attr("y", d => legendScale(d))
+          .text(d => d.toFixed(0))
+          .attr("alignment-baseline", "middle")
+          .style("fill", "#FFF")
+          .style('font-family', 'Arial');
 
         // wrap text function
         function wrapText(text, width) {
@@ -242,7 +292,7 @@
             let words = text.text().split(/\s+/).reverse();
             let line = [];
             let lineNumber = 0;
-            let lineHeight = 1.1; // You might need to adjust this value based on font size
+            let lineHeight = 1.1; 
             let y = text.attr("y");
             let x = text.attr("x");
             let dy = parseFloat(text.attr("dy") || 0);
@@ -271,7 +321,7 @@
           let ingredientsList = selectedItem.ingredients.split(",");
 
           // add menu item name
-          const maxTextWidth = titleWidth - (margins.left + margins.right); // Calculate the available width
+          const maxTextWidth = titleWidth - (margins.left + margins.right); 
           const textElement = ingredients.append('text')
             .text(selectedItem.name.toUpperCase())
             .attr('x', margins.left)
@@ -295,23 +345,18 @@
             .style("text-anchor", "start")
             .style('fill', 'white');
 
-          // let currentVerticalPosition = margins.top + 360;
-          //const lineHeight = 1.2;
-          //   let currentVerticalPosition = margins.top + 360;
-          // const lineHeight = 1.5;
+          
           ingredientsList.forEach((ingredient, index) => {
             console.log(ingredient);
             ingredients.append('text')
-              .text(ingredient.trim()) // Trim any extra whitespace
+              .text(ingredient.trim()) 
               .attr('x', margins.left)
-              .attr('y', margins.top + 360 + index * 20) // Adjust vertical positioning
+              .attr('y', margins.top + 360 + index * 20) 
               .style('font-family', 'Arial')
-              .style('font-size', '16px') // Added 'px' for font size
+              .style('font-size', '16px') 
               .style("text-anchor", "start")
               .style('fill', 'white');
-            //.call(wrapText, maxTextWidth);
-            // const textHeight = textElement.node().getBBox().height;
-            // currentVerticalPosition += textHeight * lineHeight + 20;;
+         
           });
 
 
@@ -344,7 +389,7 @@
             .innerRadius(radius - 40);
 
           const arc = pieChart.append('g')
-            .attr('transform', `translate(${radius + 30},${radius + 150})`) // Adjust the translation to offset the pie chart
+            .attr('transform', `translate(${radius + 30},${radius + 150})`) 
             .selectAll('arc')
             .data(pie(pieData))
             .enter()
@@ -356,14 +401,14 @@
 
           // Create the legend
           const legend = pieChart.append('g')
-            .attr('transform', `translate(${chartWidth - 160}, 200)`); // Adjust the position of the legend
+            .attr('transform', `translate(${chartWidth - 160}, 200)`); 
 
           const legendItems = legend.selectAll('.legend')
             .data(pieData)
             .enter()
             .append('g')
             .attr('class', 'legend')
-            .attr('transform', (d, i) => `translate(0,${i * 20})`); // Adjust spacing between legend items
+            .attr('transform', (d, i) => `translate(0,${i * 20})`); 
 
           legendItems.append('rect')
             .attr('x', 0)
@@ -376,7 +421,7 @@
             .attr('x', 15)
             .text(d => `${d.label}: ${d.value.toFixed(2)}%`)
             .style('font-family', 'Arial')
-            .style('font-size', '12px') // Added 'px' for font size
+            .style('font-size', '12px') 
             .style("text-anchor", "start")
             .style('fill', 'white')
             .attr('dy', '0.25em');
